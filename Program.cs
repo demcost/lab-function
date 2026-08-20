@@ -10,8 +10,13 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-builder.Services.AddOpenTelemetry()
-    .UseFunctionsWorkerDefaults()
-    .UseAzureMonitorExporter();
+var otel = builder.Services.AddOpenTelemetry()
+    .UseFunctionsWorkerDefaults();
+
+// UseAzureMonitorExporter() throws at startup if no connection string is configured.
+if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
+{
+    otel.UseAzureMonitorExporter();
+}
 
 builder.Build().Run();
